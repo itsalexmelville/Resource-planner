@@ -8,14 +8,49 @@
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://unpkg.com/lucide-react@latest/dist/umd/lucide-react.js"></script>
 </head>
 <body>
     <div id="root"></div>
 
     <script type="text/babel">
         const { useState } = React;
-        const { Plus, X, Users, Briefcase, Calendar, Clock } = lucideReact;
+
+        // Simple icon components
+        const Plus = () => (
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+            </svg>
+        );
+
+        const X = () => (
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+        );
+
+        const Users = () => (
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a4 4 0 11-8 0 4 4 0 018 0z" />
+            </svg>
+        );
+
+        const Briefcase = () => (
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2-2v2m8 0V6a2 2 0 012 2v6a2 2 0 01-2 2H8a2 2 0 01-2-2V8a2 2 0 012-2V6z" />
+            </svg>
+        );
+
+        const Calendar = () => (
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+            </svg>
+        );
+
+        const Clock = () => (
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+        );
 
         const DesignStudioForecastingApp = () => {
           // Initialize state
@@ -155,267 +190,270 @@
 
           const weekDates = getWeekDates(currentWeek);
 
-          return React.createElement('div', { className: "min-h-screen bg-gray-50 p-6" },
-            React.createElement('div', { className: "max-w-7xl mx-auto" },
-              // Header
-              React.createElement('div', { className: "mb-8" },
-                React.createElement('h1', { className: "text-3xl font-bold text-gray-900 mb-2" }, "Design Studio Forecasting"),
-                React.createElement('p', { className: "text-gray-600" }, "Manage your team's capacity and project allocations")
-              ),
+          return (
+            <div className="min-h-screen bg-gray-50 p-6">
+              <div className="max-w-7xl mx-auto">
+                {/* Header */}
+                <div className="mb-8">
+                  <h1 className="text-3xl font-bold text-gray-900 mb-2">Design Studio Forecasting</h1>
+                  <p className="text-gray-600">Manage your team's capacity and project allocations</p>
+                </div>
 
-              // Controls
-              React.createElement('div', { className: "bg-white rounded-lg shadow-sm border p-6 mb-6" },
-                React.createElement('div', { className: "grid grid-cols-1 md:grid-cols-3 gap-6" },
-                  // Team Management
-                  React.createElement('div', {},
-                    React.createElement('h3', { className: "text-lg font-semibold mb-3 flex items-center" },
-                      React.createElement(Users, { className: "w-5 h-5 mr-2" }),
-                      "Team Management"
-                    ),
-                    React.createElement('div', { className: "space-y-2" },
-                      React.createElement('div', { className: "flex gap-2" },
-                        React.createElement('input', {
-                          type: "text",
-                          placeholder: "Designer name",
-                          value: newDesignerName,
-                          onChange: (e) => setNewDesignerName(e.target.value),
-                          className: "flex-1 px-3 py-2 border rounded-md text-sm",
-                          onKeyPress: (e) => e.key === 'Enter' && addDesigner()
-                        }),
-                        React.createElement('button', {
-                          onClick: addDesigner,
-                          className: "px-3 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 text-sm"
-                        }, React.createElement(Plus, { className: "w-4 h-4" }))
-                      ),
-                      React.createElement('div', { className: "text-sm text-gray-600" },
-                        `Team: ${designers.length} designers × ${DAILY_CAPACITY}h/day`
-                      )
-                    )
-                  ),
+                {/* Controls */}
+                <div className="bg-white rounded-lg shadow-sm border p-6 mb-6">
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    {/* Team Management */}
+                    <div>
+                      <h3 className="text-lg font-semibold mb-3 flex items-center">
+                        <Users />
+                        <span className="ml-2">Team Management</span>
+                      </h3>
+                      <div className="space-y-2">
+                        <div className="flex gap-2">
+                          <input
+                            type="text"
+                            placeholder="Designer name"
+                            value={newDesignerName}
+                            onChange={(e) => setNewDesignerName(e.target.value)}
+                            className="flex-1 px-3 py-2 border rounded-md text-sm"
+                            onKeyPress={(e) => e.key === 'Enter' && addDesigner()}
+                          />
+                          <button
+                            onClick={addDesigner}
+                            className="px-3 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 text-sm"
+                          >
+                            <Plus />
+                          </button>
+                        </div>
+                        <div className="text-sm text-gray-600">
+                          Team: {designers.length} designers × {DAILY_CAPACITY}h/day
+                        </div>
+                      </div>
+                    </div>
 
-                  // Project Management
-                  React.createElement('div', {},
-                    React.createElement('h3', { className: "text-lg font-semibold mb-3 flex items-center" },
-                      React.createElement(Briefcase, { className: "w-5 h-5 mr-2" }),
-                      "Project Management"
-                    ),
-                    React.createElement('div', { className: "space-y-2" },
-                      React.createElement('div', { className: "flex gap-2" },
-                        React.createElement('input', {
-                          type: "text",
-                          placeholder: "Project name",
-                          value: newProjectName,
-                          onChange: (e) => setNewProjectName(e.target.value),
-                          className: "flex-1 px-3 py-2 border rounded-md text-sm",
-                          onKeyPress: (e) => e.key === 'Enter' && addProject()
-                        }),
-                        React.createElement('button', {
-                          onClick: addProject,
-                          className: "px-3 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 text-sm"
-                        }, React.createElement(Plus, { className: "w-4 h-4" }))
-                      ),
-                      React.createElement('div', { className: "text-sm text-gray-600" },
-                        `Active: ${projects.length} projects`
-                      ),
-                      React.createElement('div', { className: "mt-2 space-y-1 max-h-24 overflow-y-auto" },
-                        projects.map(project =>
-                          React.createElement('div', {
-                            key: project.id,
-                            className: "flex items-center justify-between text-sm py-1 px-2 bg-gray-50 rounded"
-                          },
-                            React.createElement('div', { className: "flex items-center" },
-                              React.createElement('div', {
-                                className: "w-3 h-3 rounded-full mr-2",
-                                style: { backgroundColor: project.color }
-                              }),
-                              React.createElement('span', { className: "truncate" }, project.name)
-                            ),
-                            React.createElement('button', {
-                              onClick: () => removeProject(project.id),
-                              className: "text-red-600 hover:text-red-800 ml-2",
-                              disabled: projects.length <= 1,
-                              title: "Remove project"
-                            }, React.createElement(X, { className: "w-3 h-3" }))
-                          )
-                        )
-                      )
-                    )
-                  ),
+                    {/* Project Management */}
+                    <div>
+                      <h3 className="text-lg font-semibold mb-3 flex items-center">
+                        <Briefcase />
+                        <span className="ml-2">Project Management</span>
+                      </h3>
+                      <div className="space-y-2">
+                        <div className="flex gap-2">
+                          <input
+                            type="text"
+                            placeholder="Project name"
+                            value={newProjectName}
+                            onChange={(e) => setNewProjectName(e.target.value)}
+                            className="flex-1 px-3 py-2 border rounded-md text-sm"
+                            onKeyPress={(e) => e.key === 'Enter' && addProject()}
+                          />
+                          <button
+                            onClick={addProject}
+                            className="px-3 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 text-sm"
+                          >
+                            <Plus />
+                          </button>
+                        </div>
+                        <div className="text-sm text-gray-600">
+                          Active: {projects.length} projects
+                        </div>
+                        <div className="mt-2 space-y-1 max-h-24 overflow-y-auto">
+                          {projects.map(project => (
+                            <div key={project.id} className="flex items-center justify-between text-sm py-1 px-2 bg-gray-50 rounded">
+                              <div className="flex items-center">
+                                <div 
+                                  className="w-3 h-3 rounded-full mr-2"
+                                  style={{ backgroundColor: project.color }}
+                                ></div>
+                                <span className="truncate">{project.name}</span>
+                              </div>
+                              <button
+                                onClick={() => removeProject(project.id)}
+                                className="text-red-600 hover:text-red-800 ml-2"
+                                disabled={projects.length <= 1}
+                                title="Remove project"
+                              >
+                                <X />
+                              </button>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
 
-                  // Week Navigation
-                  React.createElement('div', {},
-                    React.createElement('h3', { className: "text-lg font-semibold mb-3 flex items-center" },
-                      React.createElement(Calendar, { className: "w-5 h-5 mr-2" }),
-                      "Week Navigation"
-                    ),
-                    React.createElement('div', { className: "space-y-2" },
-                      React.createElement('div', { className: "flex gap-2" },
-                        React.createElement('button', {
-                          onClick: () => setCurrentWeek(Math.max(0, currentWeek - 1)),
-                          className: "px-3 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 text-sm",
-                          disabled: currentWeek === 0
-                        }, "← Prev"),
-                        React.createElement('button', {
-                          onClick: () => setCurrentWeek(Math.min(numWeeks - 1, currentWeek + 1)),
-                          className: "px-3 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 text-sm",
-                          disabled: currentWeek === numWeeks - 1
-                        }, "Next →")
-                      ),
-                      React.createElement('div', { className: "text-sm text-gray-600" },
-                        `Week ${currentWeek + 1} of ${numWeeks}`
-                      )
-                    )
-                  )
-                )
-              ),
+                    {/* Week Navigation */}
+                    <div>
+                      <h3 className="text-lg font-semibold mb-3 flex items-center">
+                        <Calendar />
+                        <span className="ml-2">Week Navigation</span>
+                      </h3>
+                      <div className="space-y-2">
+                        <div className="flex gap-2">
+                          <button
+                            onClick={() => setCurrentWeek(Math.max(0, currentWeek - 1))}
+                            className="px-3 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 text-sm"
+                            disabled={currentWeek === 0}
+                          >
+                            ← Prev
+                          </button>
+                          <button
+                            onClick={() => setCurrentWeek(Math.min(numWeeks - 1, currentWeek + 1))}
+                            className="px-3 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 text-sm"
+                            disabled={currentWeek === numWeeks - 1}
+                          >
+                            Next →
+                          </button>
+                        </div>
+                        <div className="text-sm text-gray-600">
+                          Week {currentWeek + 1} of {numWeeks}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
 
-              // Main Forecasting Grid
-              React.createElement('div', { className: "bg-white rounded-lg shadow-sm border overflow-hidden" },
-                React.createElement('div', { className: "p-4 bg-gray-50 border-b" },
-                  React.createElement('h2', { className: "text-xl font-semibold flex items-center" },
-                    React.createElement(Clock, { className: "w-5 h-5 mr-2" }),
-                    `Week ${currentWeek + 1} Allocation - ${weekDates[0]} to ${weekDates[4]}`
-                  )
-                ),
+                {/* Main Forecasting Grid */}
+                <div className="bg-white rounded-lg shadow-sm border overflow-hidden">
+                  <div className="p-4 bg-gray-50 border-b">
+                    <h2 className="text-xl font-semibold flex items-center">
+                      <Clock />
+                      <span className="ml-2">Week {currentWeek + 1} Allocation - {weekDates[0]} to {weekDates[4]}</span>
+                    </h2>
+                  </div>
 
-                React.createElement('div', { className: "overflow-x-auto" },
-                  React.createElement('table', { className: "w-full" },
-                    React.createElement('thead', {},
-                      React.createElement('tr', { className: "bg-gray-50 border-b" },
-                        React.createElement('th', { className: "text-left p-3 font-semibold" }, "Designer"),
-                        ...weekDates.map((date, index) =>
-                          React.createElement('th', {
-                            key: index,
-                            className: "text-center p-3 font-semibold min-w-32"
-                          }, date)
-                        ),
-                        React.createElement('th', { className: "text-center p-3 font-semibold" }, "Week Total"),
-                        React.createElement('th', { className: "text-center p-3 font-semibold" }, "Actions")
-                      )
-                    ),
-                    React.createElement('tbody', {},
-                      designers.map(designer =>
-                        React.createElement(React.Fragment, { key: designer.id },
-                          // Designer name row
-                          React.createElement('tr', { className: "border-b bg-blue-50" },
-                            React.createElement('td', {
-                              className: "p-3 font-semibold text-blue-900",
-                              colSpan: 8
-                            },
-                              designer.name,
-                              React.createElement('button', {
-                                onClick: () => removeDesigner(designer.id),
-                                className: "ml-2 text-red-600 hover:text-red-800",
-                                disabled: designers.length <= 1
-                              }, React.createElement(X, { className: "w-4 h-4" }))
-                            )
-                          ),
-                          
-                          // Project allocation rows for this designer
-                          ...projects.map(project =>
-                            React.createElement('tr', {
-                              key: `${designer.id}-${project.id}`,
-                              className: "border-b hover:bg-gray-50"
-                            },
-                              React.createElement('td', { className: "p-3 pl-8 text-sm" },
-                                React.createElement('div', { className: "flex items-center" },
-                                  React.createElement('div', {
-                                    className: "w-3 h-3 rounded-full mr-2",
-                                    style: { backgroundColor: project.color }
-                                  }),
-                                  project.name
-                                )
-                              ),
-                              
-                              // Daily allocation inputs
-                              ...Array.from({ length: DAYS_PER_WEEK }).map((_, dayIndex) => {
-                                const currentAllocation = getAllocation(designer.id, project.id, currentWeek, dayIndex);
-                                const dailyTotal = getDailyTotal(designer.id, currentWeek, dayIndex);
-                                const isOverCapacity = dailyTotal > DAILY_CAPACITY;
+                  <div className="overflow-x-auto">
+                    <table className="w-full">
+                      <thead>
+                        <tr className="bg-gray-50 border-b">
+                          <th className="text-left p-3 font-semibold">Designer</th>
+                          {weekDates.map((date, index) => (
+                            <th key={index} className="text-center p-3 font-semibold min-w-32">
+                              {date}
+                            </th>
+                          ))}
+                          <th className="text-center p-3 font-semibold">Week Total</th>
+                          <th className="text-center p-3 font-semibold">Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {designers.map((designer) => (
+                          <React.Fragment key={designer.id}>
+                            {/* Designer name row */}
+                            <tr className="border-b bg-blue-50">
+                              <td className="p-3 font-semibold text-blue-900" colSpan={8}>
+                                {designer.name}
+                                <button
+                                  onClick={() => removeDesigner(designer.id)}
+                                  className="ml-2 text-red-600 hover:text-red-800"
+                                  disabled={designers.length <= 1}
+                                >
+                                  <X />
+                                </button>
+                              </td>
+                            </tr>
+                            
+                            {/* Project allocation rows for this designer */}
+                            {projects.map((project) => (
+                              <tr key={`${designer.id}-${project.id}`} className="border-b hover:bg-gray-50">
+                                <td className="p-3 pl-8 text-sm">
+                                  <div className="flex items-center">
+                                    <div 
+                                      className="w-3 h-3 rounded-full mr-2"
+                                      style={{ backgroundColor: project.color }}
+                                    ></div>
+                                    {project.name}
+                                  </div>
+                                </td>
                                 
-                                return React.createElement('td', {
-                                  key: dayIndex,
-                                  className: "p-2 text-center"
-                                },
-                                  React.createElement('input', {
-                                    type: "number",
-                                    min: "0",
-                                    max: DAILY_CAPACITY,
-                                    step: "0.5",
-                                    value: currentAllocation || '',
-                                    onChange: (e) => updateAllocation(designer.id, project.id, currentWeek, dayIndex, e.target.value),
-                                    className: `w-16 px-2 py-1 text-center border rounded text-sm ${
-                                      isOverCapacity ? 'border-red-300 bg-red-50' : 'border-gray-300'
-                                    }`,
-                                    placeholder: "0"
-                                  })
+                                {/* Daily allocation inputs */}
+                                {Array.from({ length: DAYS_PER_WEEK }).map((_, dayIndex) => {
+                                  const currentAllocation = getAllocation(designer.id, project.id, currentWeek, dayIndex);
+                                  const dailyTotal = getDailyTotal(designer.id, currentWeek, dayIndex);
+                                  const isOverCapacity = dailyTotal > DAILY_CAPACITY;
+                                  
+                                  return (
+                                    <td key={dayIndex} className="p-2 text-center">
+                                      <input
+                                        type="number"
+                                        min="0"
+                                        max={DAILY_CAPACITY}
+                                        step="0.5"
+                                        value={currentAllocation || ''}
+                                        onChange={(e) => updateAllocation(designer.id, project.id, currentWeek, dayIndex, e.target.value)}
+                                        className={`w-16 px-2 py-1 text-center border rounded text-sm ${
+                                          isOverCapacity ? 'border-red-300 bg-red-50' : 'border-gray-300'
+                                        }`}
+                                        placeholder="0"
+                                      />
+                                    </td>
+                                  );
+                                })}
+                                
+                                {/* Week total for this project */}
+                                <td className="p-3 text-center text-sm font-medium">
+                                  {Array.from({ length: DAYS_PER_WEEK }).reduce((total, _, dayIndex) => 
+                                    total + getAllocation(designer.id, project.id, currentWeek, dayIndex), 0
+                                  ).toFixed(1)}h
+                                </td>
+                                
+                                <td className="p-3"></td>
+                              </tr>
+                            ))}
+                            
+                            {/* Daily totals row for this designer */}
+                            <tr className="border-b bg-gray-100">
+                              <td className="p-3 pl-8 text-sm font-semibold">Daily Totals</td>
+                              {Array.from({ length: DAYS_PER_WEEK }).map((_, dayIndex) => {
+                                const total = getDailyTotal(designer.id, currentWeek, dayIndex);
+                                const isOverCapacity = total > DAILY_CAPACITY;
+                                return (
+                                  <td key={dayIndex} className={`p-3 text-center font-semibold text-sm ${
+                                    isOverCapacity ? 'text-red-600' : total === DAILY_CAPACITY ? 'text-green-600' : 'text-gray-900'
+                                  }`}>
+                                    {total.toFixed(1)}h / {DAILY_CAPACITY}h
+                                  </td>
                                 );
-                              }),
-                              
-                              // Week total for this project
-                              React.createElement('td', { className: "p-3 text-center text-sm font-medium" },
-                                Array.from({ length: DAYS_PER_WEEK }).reduce((total, _, dayIndex) => 
-                                  total + getAllocation(designer.id, project.id, currentWeek, dayIndex), 0
-                                ).toFixed(1) + 'h'
-                              ),
-                              
-                              React.createElement('td', { className: "p-3" })
-                            )
-                          ),
-                          
-                          // Daily totals row for this designer
-                          React.createElement('tr', { className: "border-b bg-gray-100" },
-                            React.createElement('td', { className: "p-3 pl-8 text-sm font-semibold" }, "Daily Totals"),
-                            ...Array.from({ length: DAYS_PER_WEEK }).map((_, dayIndex) => {
-                              const total = getDailyTotal(designer.id, currentWeek, dayIndex);
-                              const isOverCapacity = total > DAILY_CAPACITY;
-                              return React.createElement('td', {
-                                key: dayIndex,
-                                className: `p-3 text-center font-semibold text-sm ${
-                                  isOverCapacity ? 'text-red-600' : total === DAILY_CAPACITY ? 'text-green-600' : 'text-gray-900'
-                                }`
-                              }, `${total.toFixed(1)}h / ${DAILY_CAPACITY}h`);
-                            }),
-                            React.createElement('td', { className: "p-3 text-center font-semibold text-sm" },
-                              `${getWeeklyTotal(designer.id, currentWeek).toFixed(1)}h / ${DAILY_CAPACITY * DAYS_PER_WEEK}h`
-                            ),
-                            React.createElement('td', { className: "p-3" })
-                          )
-                        )
-                      )
-                    )
-                  )
-                )
-              ),
+                              })}
+                              <td className="p-3 text-center font-semibold text-sm">
+                                {getWeeklyTotal(designer.id, currentWeek).toFixed(1)}h / {DAILY_CAPACITY * DAYS_PER_WEEK}h
+                              </td>
+                              <td className="p-3"></td>
+                            </tr>
+                          </React.Fragment>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
 
-              // Project Summary
-              React.createElement('div', { className: "mt-6 bg-white rounded-lg shadow-sm border p-6" },
-                React.createElement('h3', { className: "text-lg font-semibold mb-4" }, `Project Summary - Week ${currentWeek + 1}`),
-                React.createElement('div', { className: "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" },
-                  projects.map(project => {
-                    const projectTotal = getProjectTotal(project.id, currentWeek);
-                    return React.createElement('div', {
-                      key: project.id,
-                      className: "p-4 border rounded-lg"
-                    },
-                      React.createElement('div', { className: "flex items-center mb-2" },
-                        React.createElement('div', {
-                          className: "w-4 h-4 rounded-full mr-2",
-                          style: { backgroundColor: project.color }
-                        }),
-                        React.createElement('h4', { className: "font-semibold" }, project.name)
-                      ),
-                      React.createElement('p', { className: "text-2xl font-bold text-gray-900" }, projectTotal.toFixed(1) + 'h'),
-                      React.createElement('p', { className: "text-sm text-gray-600" }, "Total allocated this week")
-                    );
-                  })
-                )
-              )
-            )
+                {/* Project Summary */}
+                <div className="mt-6 bg-white rounded-lg shadow-sm border p-6">
+                  <h3 className="text-lg font-semibold mb-4">Project Summary - Week {currentWeek + 1}</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {projects.map(project => {
+                      const projectTotal = getProjectTotal(project.id, currentWeek);
+                      return (
+                        <div key={project.id} className="p-4 border rounded-lg">
+                          <div className="flex items-center mb-2">
+                            <div 
+                              className="w-4 h-4 rounded-full mr-2"
+                              style={{ backgroundColor: project.color }}
+                            ></div>
+                            <h4 className="font-semibold">{project.name}</h4>
+                          </div>
+                          <p className="text-2xl font-bold text-gray-900">{projectTotal.toFixed(1)}h</p>
+                          <p className="text-sm text-gray-600">Total allocated this week</p>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              </div>
+            </div>
           );
         };
 
-        ReactDOM.render(React.createElement(DesignStudioForecastingApp), document.getElementById('root'));
+        ReactDOM.render(<DesignStudioForecastingApp />, document.getElementById('root'));
     </script>
 </body>
 </html>
