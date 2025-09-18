@@ -10,8 +10,8 @@
     <script src="https://cdn.tailwindcss.com"></script>
     
     <!-- Firebase Scripts -->
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 </head>
 <body>
     <div id="root"></div>
@@ -114,56 +114,52 @@
           );
         };
 
-        // Week Selector Component
+        // Week Selector Component - Simplified
         const WeekSelector = ({ currentWeek, currentYear, onWeekSelect }) => {
           const [showCalendar, setShowCalendar] = useState(false);
           const [viewYear, setViewYear] = useState(currentYear);
 
-          const getWeekNumber = (date) => {
-            const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
-            const dayNum = d.getUTCDay() || 7;
-            d.setUTCDate(d.getUTCDate() + 4 - dayNum);
-            const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
-            return Math.ceil((((d - yearStart) / 86400000) + 1) / 7);
+          const getWeekStartDate = (weekIndex, year) => {
+            const startOfYear = new Date(year, 0, 1);
+            let firstMonday = new Date(startOfYear);
+            while (firstMonday.getDay() !== 1) {
+              firstMonday.setDate(firstMonday.getDate() + 1);
+            }
+            const weekStart = new Date(firstMonday);
+            weekStart.setDate(firstMonday.getDate() + (weekIndex * 7));
+            return weekStart;
           };
 
-          const getWeeksInYear = (year) => {
-            const weeks = [];
-            const startOfYear = new Date(year, 0, 1);
-            const endOfYear = new Date(year, 11, 31);
-            
-            let currentDate = new Date(startOfYear);
-            // Find first Monday of year
-            while (currentDate.getDay() !== 1) {
-              currentDate.setDate(currentDate.getDate() + 1);
+          const getWeekEndDate = (weekIndex, year) => {
+            const weekStart = getWeekStartDate(weekIndex, year);
+            const weekEnd = new Date(weekStart);
+            weekEnd.setDate(weekStart.getDate() + 4);
+            return weekEnd;
+          };
+
+          const formatDateRange = (weekIndex, year) => {
+            try {
+              const start = getWeekStartDate(weekIndex, year);
+              const end = getWeekEndDate(weekIndex, year);
+              return `${start.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} - ${end.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`;
+            } catch (e) {
+              return "Week " + (weekIndex + 1);
             }
-            
-            let weekNum = 1;
-            while (currentDate <= endOfYear) {
-              const weekStart = new Date(currentDate);
-              const weekEnd = new Date(currentDate);
-              weekEnd.setDate(weekEnd.getDate() + 4); // Friday
-              
+          };
+
+          const generateWeekOptions = (year) => {
+            const weeks = [];
+            for (let i = 0; i < 52; i++) {
               weeks.push({
-                number: weekNum,
-                start: new Date(weekStart),
-                end: new Date(weekEnd),
-                key: `${year}-${weekNum}`
+                number: i + 1,
+                index: i,
+                dateRange: formatDateRange(i, year)
               });
-              
-              currentDate.setDate(currentDate.getDate() + 7);
-              weekNum++;
             }
             return weeks;
           };
 
-          const weeks = getWeeksInYear(viewYear);
-          const currentWeekData = weeks[currentWeek] || weeks[0];
-
-          const formatDateRange = (start, end) => {
-            if (!start || !end) return "Week 1";
-            return `${start.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} - ${end.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`;
-          };
+          const weeks = generateWeekOptions(viewYear);
 
           return (
             <div className="relative">
@@ -174,7 +170,7 @@
                 <Calendar />
                 <div className="text-left">
                   <div className="font-semibold">Week {currentWeek + 1}, {currentYear}</div>
-                  <div className="text-sm text-gray-600">{formatDateRange(currentWeekData?.start, currentWeekData?.end)}</div>
+                  <div className="text-sm text-gray-600">{formatDateRange(currentWeek, currentYear)}</div>
                 </div>
               </button>
 
@@ -198,21 +194,21 @@
                   
                   <div className="max-h-64 overflow-y-auto p-2">
                     <div className="grid grid-cols-4 gap-2">
-                      {weeks.map((week, index) => (
+                      {weeks.map((week) => (
                         <button
-                          key={week.key}
+                          key={`week-${week.index}`}
                           onClick={() => {
-                            onWeekSelect(index, viewYear);
+                            onWeekSelect(week.index, viewYear);
                             setShowCalendar(false);
                           }}
                           className={`p-2 text-sm rounded hover:bg-blue-50 ${
-                            index === currentWeek && viewYear === currentYear
+                            week.index === currentWeek && viewYear === currentYear
                               ? 'bg-blue-600 text-white'
                               : 'text-gray-700'
                           }`}
                         >
                           <div className="font-medium">W{week.number}</div>
-                          <div className="text-xs">{formatDateRange(week.start, week.end)}</div>
+                          <div className="text-xs">{week.dateRange}</div>
                         </button>
                       ))}
                     </div>
