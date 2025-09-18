@@ -10,14 +10,17 @@
     <script src="https://cdn.tailwindcss.com"></script>
     
     <!-- Firebase Scripts -->
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
 </head>
 <body>
     <div id="root"></div>
 
     <script type="text/babel">
-        // Firebase Configuration
+        ReactDOM.render(<DesignStudioForecastingApp />, document.getElementById('root'));
+    </script>
+</body>
+</html>// Firebase Configuration
         const firebaseConfig = {
           apiKey: "AIzaSyCY2KvEMW4hvXN6ai2kS3Wmcv-F3BMUGZQ",
           authDomain: "design-studio-forecasting.firebaseapp.com",
@@ -71,13 +74,6 @@
             </svg>
         );
 
-        const Settings = () => (
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-            </svg>
-        );
-
         const ChevronLeft = () => (
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
@@ -90,37 +86,13 @@
             </svg>
         );
 
-        // Modal Component
-        const Modal = ({ isOpen, onClose, title, children }) => {
-          if (!isOpen) return null;
-
-          return (
-            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-              <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-                <div className="flex items-center justify-between p-6 border-b">
-                  <h2 className="text-xl font-semibold">{title}</h2>
-                  <button
-                    onClick={onClose}
-                    className="p-2 hover:bg-gray-100 rounded-full"
-                  >
-                    <X />
-                  </button>
-                </div>
-                <div className="p-6">
-                  {children}
-                </div>
-              </div>
-            </div>
-          );
-        };
-
-        // Week Selector Component - Simplified
-        const WeekSelector = ({ currentWeek, currentYear, onWeekSelect }) => {
+        // Week Selector Component
+        const WeekSelector = ({ currentWeek, onWeekSelect }) => {
           const [showCalendar, setShowCalendar] = useState(false);
-          const [viewYear, setViewYear] = useState(currentYear);
+          const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
 
-          const getWeekStartDate = (weekIndex, year) => {
-            const startOfYear = new Date(year, 0, 1);
+          const getWeekStartDate = (weekIndex) => {
+            const startOfYear = new Date(selectedYear, 0, 1);
             let firstMonday = new Date(startOfYear);
             while (firstMonday.getDay() !== 1) {
               firstMonday.setDate(firstMonday.getDate() + 1);
@@ -130,36 +102,14 @@
             return weekStart;
           };
 
-          const getWeekEndDate = (weekIndex, year) => {
-            const weekStart = getWeekStartDate(weekIndex, year);
-            const weekEnd = new Date(weekStart);
-            weekEnd.setDate(weekStart.getDate() + 4);
-            return weekEnd;
+          const formatWeekRange = (weekIndex) => {
+            const start = getWeekStartDate(weekIndex);
+            const end = new Date(start);
+            end.setDate(start.getDate() + 4); // Friday
+            return `${start.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} - ${end.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`;
           };
 
-          const formatDateRange = (weekIndex, year) => {
-            try {
-              const start = getWeekStartDate(weekIndex, year);
-              const end = getWeekEndDate(weekIndex, year);
-              return `${start.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} - ${end.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`;
-            } catch (e) {
-              return "Week " + (weekIndex + 1);
-            }
-          };
-
-          const generateWeekOptions = (year) => {
-            const weeks = [];
-            for (let i = 0; i < 52; i++) {
-              weeks.push({
-                number: i + 1,
-                index: i,
-                dateRange: formatDateRange(i, year)
-              });
-            }
-            return weeks;
-          };
-
-          const weeks = generateWeekOptions(viewYear);
+          const currentWeekRange = formatWeekRange(currentWeek);
 
           return (
             <div className="relative">
@@ -169,23 +119,23 @@
               >
                 <Calendar />
                 <div className="text-left">
-                  <div className="font-semibold">Week {currentWeek + 1}, {currentYear}</div>
-                  <div className="text-sm text-gray-600">{formatDateRange(currentWeek, currentYear)}</div>
+                  <div className="font-semibold">Week {currentWeek + 1}, {selectedYear}</div>
+                  <div className="text-sm text-gray-600">{currentWeekRange}</div>
                 </div>
               </button>
 
               {showCalendar && (
-                <div className="absolute top-full left-0 mt-2 bg-white border border-gray-300 rounded-lg shadow-lg z-20 w-96">
+                <div className="absolute top-full left-0 mt-2 bg-white border border-gray-300 rounded-lg shadow-lg z-20 w-80">
                   <div className="p-4 border-b flex items-center justify-between">
                     <button
-                      onClick={() => setViewYear(viewYear - 1)}
+                      onClick={() => setSelectedYear(selectedYear - 1)}
                       className="p-1 hover:bg-gray-100 rounded"
                     >
                       <ChevronLeft />
                     </button>
-                    <h3 className="font-semibold">{viewYear}</h3>
+                    <h3 className="font-semibold">{selectedYear}</h3>
                     <button
-                      onClick={() => setViewYear(viewYear + 1)}
+                      onClick={() => setSelectedYear(selectedYear + 1)}
                       className="p-1 hover:bg-gray-100 rounded"
                     >
                       <ChevronRight />
@@ -193,22 +143,20 @@
                   </div>
                   
                   <div className="max-h-64 overflow-y-auto p-2">
-                    <div className="grid grid-cols-4 gap-2">
-                      {weeks.map((week) => (
+                    <div className="grid grid-cols-4 gap-1">
+                      {Array.from({ length: 52 }, (_, i) => (
                         <button
-                          key={`week-${week.index}`}
+                          key={i}
                           onClick={() => {
-                            onWeekSelect(week.index, viewYear);
+                            onWeekSelect(i);
                             setShowCalendar(false);
                           }}
-                          className={`p-2 text-sm rounded hover:bg-blue-50 ${
-                            week.index === currentWeek && viewYear === currentYear
-                              ? 'bg-blue-600 text-white'
-                              : 'text-gray-700'
+                          className={`p-2 text-xs rounded hover:bg-blue-50 ${
+                            i === currentWeek ? 'bg-blue-600 text-white' : 'text-gray-700'
                           }`}
                         >
-                          <div className="font-medium">W{week.number}</div>
-                          <div className="text-xs">{week.dateRange}</div>
+                          <div className="font-medium">W{i + 1}</div>
+                          <div className="text-xs">{formatWeekRange(i)}</div>
                         </button>
                       ))}
                     </div>
@@ -234,13 +182,11 @@
           ]);
 
           const [currentWeek, setCurrentWeek] = useState(0);
-          const [currentYear, setCurrentYear] = useState(new Date().getFullYear());
+          const [numWeeks, setNumWeeks] = useState(52);
           const [allocations, setAllocations] = useState({});
           const [newDesignerName, setNewDesignerName] = useState('');
           const [newProjectName, setNewProjectName] = useState('');
           const [isLoading, setIsLoading] = useState(true);
-          const [showTeamModal, setShowTeamModal] = useState(false);
-          const [showProjectModal, setShowProjectModal] = useState(false);
 
           const DAILY_CAPACITY = 7;
           const DAYS_PER_WEEK = 5;
@@ -267,15 +213,10 @@
                   setAllocations(allocationsSnapshot.val());
                 }
 
-                // Load current week and year
+                // Load current week
                 const weekSnapshot = await database.ref('currentWeek').once('value');
                 if (weekSnapshot.exists()) {
                   setCurrentWeek(weekSnapshot.val());
-                }
-
-                const yearSnapshot = await database.ref('currentYear').once('value');
-                if (yearSnapshot.exists()) {
-                  setCurrentYear(yearSnapshot.val());
                 }
               } catch (error) {
                 console.error('Error loading data:', error);
@@ -297,9 +238,10 @@
           };
 
           // Generate date labels for the current week
-          const getWeekDates = (weekIndex, year) => {
+          const getWeekDates = (weekIndex) => {
             const dates = [];
-            const startOfYear = new Date(year, 0, 1);
+            const today = new Date();
+            const startOfYear = new Date(today.getFullYear(), 0, 1);
             
             // Find first Monday of the year
             let firstMonday = new Date(startOfYear);
@@ -320,19 +262,19 @@
           };
 
           // Get allocation key
-          const getAllocationKey = (designerId, projectId, weekIndex, dayIndex, year) => {
-            return `${designerId}-${projectId}-${year}-${weekIndex}-${dayIndex}`;
+          const getAllocationKey = (designerId, projectId, weekIndex, dayIndex) => {
+            return `${designerId}-${projectId}-${weekIndex}-${dayIndex}`;
           };
 
           // Get allocation value
-          const getAllocation = (designerId, projectId, weekIndex, dayIndex, year = currentYear) => {
-            const key = getAllocationKey(designerId, projectId, weekIndex, dayIndex, year);
+          const getAllocation = (designerId, projectId, weekIndex, dayIndex) => {
+            const key = getAllocationKey(designerId, projectId, weekIndex, dayIndex);
             return allocations[key] || 0;
           };
 
           // Update allocation
           const updateAllocation = (designerId, projectId, weekIndex, dayIndex, hours) => {
-            const key = getAllocationKey(designerId, projectId, weekIndex, dayIndex, currentYear);
+            const key = getAllocationKey(designerId, projectId, weekIndex, dayIndex);
             const numHours = Math.max(0, Math.min(DAILY_CAPACITY, parseFloat(hours) || 0));
             const newAllocations = {
               ...allocations,
@@ -345,7 +287,7 @@
           // Calculate total hours for a designer on a specific day
           const getDailyTotal = (designerId, weekIndex, dayIndex) => {
             return projects.reduce((total, project) => {
-              return total + getAllocation(designerId, project.id, weekIndex, dayIndex, currentYear);
+              return total + getAllocation(designerId, project.id, weekIndex, dayIndex);
             }, 0);
           };
 
@@ -363,7 +305,7 @@
             let total = 0;
             for (let day = 0; day < DAYS_PER_WEEK; day++) {
               designers.forEach(designer => {
-                total += getAllocation(designer.id, projectId, weekIndex, day, currentYear);
+                total += getAllocation(designer.id, projectId, weekIndex, day);
               });
             }
             return total;
@@ -432,14 +374,12 @@
           };
 
           // Handle week selection
-          const handleWeekSelect = (weekIndex, year) => {
+          const handleWeekSelect = (weekIndex) => {
             setCurrentWeek(weekIndex);
-            setCurrentYear(year);
             saveToFirebase('currentWeek', weekIndex);
-            saveToFirebase('currentYear', year);
           };
 
-          const weekDates = getWeekDates(currentWeek, currentYear);
+          const weekDates = getWeekDates(currentWeek);
 
           // Show loading state while data loads
           if (isLoading) {
@@ -458,44 +398,121 @@
               <div className="max-w-7xl mx-auto">
                 {/* Header */}
                 <div className="mb-8">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <h1 className="text-3xl font-bold text-gray-900 mb-2">Design Studio Forecasting</h1>
-                      <p className="text-gray-600">Manage your team's capacity and project allocations</p>
-                    </div>
-                    <button
-                      onClick={() => setShowTeamModal(true)}
-                      className="flex items-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
-                    >
-                      <Settings />
-                      <span>Configure</span>
-                    </button>
-                  </div>
+                  <h1 className="text-3xl font-bold text-gray-900 mb-2">Design Studio Forecasting</h1>
+                  <p className="text-gray-600">Manage your team's capacity and project allocations</p>
                 </div>
 
-                {/* Week Navigation */}
+                {/* Controls */}
                 <div className="bg-white rounded-lg shadow-sm border p-6 mb-6">
-                  <div className="flex items-center justify-between">
-                    <WeekSelector 
-                      currentWeek={currentWeek}
-                      currentYear={currentYear}
-                      onWeekSelect={handleWeekSelect}
-                    />
-                    
-                    <div className="flex items-center space-x-4">
-                      <button
-                        onClick={() => handleWeekSelect(Math.max(0, currentWeek - 1), currentYear)}
-                        className="px-3 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 text-sm"
-                        disabled={currentWeek === 0}
-                      >
-                        ← Prev Week
-                      </button>
-                      <button
-                        onClick={() => handleWeekSelect(currentWeek + 1, currentYear)}
-                        className="px-3 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 text-sm"
-                      >
-                        Next Week →
-                      </button>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    {/* Team Management */}
+                    <div>
+                      <h3 className="text-lg font-semibold mb-3 flex items-center">
+                        <Users />
+                        <span className="ml-2">Team Management</span>
+                      </h3>
+                      <div className="space-y-2">
+                        <div className="flex gap-2">
+                          <input
+                            type="text"
+                            placeholder="Designer name"
+                            value={newDesignerName}
+                            onChange={(e) => setNewDesignerName(e.target.value)}
+                            className="flex-1 px-3 py-2 border rounded-md text-sm"
+                            onKeyPress={(e) => e.key === 'Enter' && addDesigner()}
+                          />
+                          <button
+                            onClick={addDesigner}
+                            className="px-3 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 text-sm"
+                          >
+                            <Plus />
+                          </button>
+                        </div>
+                        <div className="text-sm text-gray-600">
+                          Team: {designers.length} designers × {DAILY_CAPACITY}h/day
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Project Management */}
+                    <div>
+                      <h3 className="text-lg font-semibold mb-3 flex items-center">
+                        <Briefcase />
+                        <span className="ml-2">Project Management</span>
+                      </h3>
+                      <div className="space-y-2">
+                        <div className="flex gap-2">
+                          <input
+                            type="text"
+                            placeholder="Project name"
+                            value={newProjectName}
+                            onChange={(e) => setNewProjectName(e.target.value)}
+                            className="flex-1 px-3 py-2 border rounded-md text-sm"
+                            onKeyPress={(e) => e.key === 'Enter' && addProject()}
+                          />
+                          <button
+                            onClick={addProject}
+                            className="px-3 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 text-sm"
+                          >
+                            <Plus />
+                          </button>
+                        </div>
+                        <div className="text-sm text-gray-600">
+                          Active: {projects.length} projects
+                        </div>
+                        <div className="mt-2 space-y-1 max-h-24 overflow-y-auto">
+                          {projects.map(project => (
+                            <div key={project.id} className="flex items-center justify-between text-sm py-1 px-2 bg-gray-50 rounded">
+                              <div className="flex items-center">
+                                <div 
+                                  className="w-3 h-3 rounded-full mr-2"
+                                  style={{ backgroundColor: project.color }}
+                                ></div>
+                                <span className="truncate">{project.name}</span>
+                              </div>
+                              <button
+                                onClick={() => removeProject(project.id)}
+                                className="text-red-600 hover:text-red-800 ml-2"
+                                disabled={projects.length <= 1}
+                                title="Remove project"
+                              >
+                                <X />
+                              </button>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Week Navigation */}
+                    <div>
+                      <h3 className="text-lg font-semibold mb-3 flex items-center">
+                        <Calendar />
+                        <span className="ml-2">Week Navigation</span>
+                      </h3>
+                      <div className="space-y-3">
+                        <WeekSelector 
+                          currentWeek={currentWeek}
+                          onWeekSelect={handleWeekSelect}
+                        />
+                        
+                        <div className="flex gap-2">
+                          <button
+                            onClick={() => handleWeekSelect(Math.max(0, currentWeek - 1))}
+                            className="px-3 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 text-sm"
+                            disabled={currentWeek === 0}
+                          >
+                            ← Prev
+                          </button>
+                          <button
+                            onClick={() => handleWeekSelect(Math.min(numWeeks - 1, currentWeek + 1))}
+                            className="px-3 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 text-sm"
+                            disabled={currentWeek === numWeeks - 1}
+                          >
+                            Next →
+                          </button>
+                        </div>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -505,7 +522,7 @@
                   <div className="p-4 bg-gray-50 border-b">
                     <h2 className="text-xl font-semibold flex items-center">
                       <Clock />
-                      <span className="ml-2">Week {currentWeek + 1}, {currentYear} - {weekDates[0]} to {weekDates[4]}</span>
+                      <span className="ml-2">Week {currentWeek + 1} Allocation - {weekDates[0]} to {weekDates[4]}</span>
                     </h2>
                   </div>
 
@@ -520,6 +537,7 @@
                             </th>
                           ))}
                           <th className="text-center p-3 font-semibold">Week Total</th>
+                          <th className="text-center p-3 font-semibold">Actions</th>
                         </tr>
                       </thead>
                       <tbody>
@@ -527,8 +545,15 @@
                           <React.Fragment key={designer.id}>
                             {/* Designer name row */}
                             <tr className="border-b bg-blue-50">
-                              <td className="p-3 font-semibold text-blue-900" colSpan={7}>
+                              <td className="p-3 font-semibold text-blue-900" colSpan={8}>
                                 {designer.name}
+                                <button
+                                  onClick={() => removeDesigner(designer.id)}
+                                  className="ml-2 text-red-600 hover:text-red-800"
+                                  disabled={designers.length <= 1}
+                                >
+                                  <X />
+                                </button>
                               </td>
                             </tr>
                             
@@ -547,7 +572,7 @@
                                 
                                 {/* Daily allocation inputs */}
                                 {Array.from({ length: DAYS_PER_WEEK }).map((_, dayIndex) => {
-                                  const currentAllocation = getAllocation(designer.id, project.id, currentWeek, dayIndex, currentYear);
+                                  const currentAllocation = getAllocation(designer.id, project.id, currentWeek, dayIndex);
                                   const dailyTotal = getDailyTotal(designer.id, currentWeek, dayIndex);
                                   const isOverCapacity = dailyTotal > DAILY_CAPACITY;
                                   
@@ -572,9 +597,11 @@
                                 {/* Week total for this project */}
                                 <td className="p-3 text-center text-sm font-medium">
                                   {Array.from({ length: DAYS_PER_WEEK }).reduce((total, _, dayIndex) => 
-                                    total + getAllocation(designer.id, project.id, currentWeek, dayIndex, currentYear), 0
+                                    total + getAllocation(designer.id, project.id, currentWeek, dayIndex), 0
                                   ).toFixed(1)}h
                                 </td>
+                                
+                                <td className="p-3"></td>
                               </tr>
                             ))}
                             
@@ -595,6 +622,7 @@
                               <td className="p-3 text-center font-semibold text-sm">
                                 {getWeeklyTotal(designer.id, currentWeek).toFixed(1)}h / {DAILY_CAPACITY * DAYS_PER_WEEK}h
                               </td>
+                              <td className="p-3"></td>
                             </tr>
                           </React.Fragment>
                         ))}
@@ -605,7 +633,7 @@
 
                 {/* Project Summary */}
                 <div className="mt-6 bg-white rounded-lg shadow-sm border p-6">
-                  <h3 className="text-lg font-semibold mb-4">Project Summary - Week {currentWeek + 1}, {currentYear}</h3>
+                  <h3 className="text-lg font-semibold mb-4">Project Summary - Week {currentWeek + 1}</h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                     {projects.map(project => {
                       const projectTotal = getProjectTotal(project.id, currentWeek);
@@ -615,3 +643,17 @@
                             <div 
                               className="w-4 h-4 rounded-full mr-2"
                               style={{ backgroundColor: project.color }}
+                            ></div>
+                            <h4 className="font-semibold">{project.name}</h4>
+                          </div>
+                          <p className="text-2xl font-bold text-gray-900">{projectTotal.toFixed(1)}h</p>
+                          <p className="text-sm text-gray-600">Total allocated this week</p>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              </div>
+            </div>
+          );
+        };
