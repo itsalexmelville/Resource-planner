@@ -17,10 +17,7 @@
     <div id="root"></div>
 
     <script type="text/babel">
-        ReactDOM.render(<DesignStudioForecastingApp />, document.getElementById('root'));
-    </script>
-</body>
-</html>// Firebase Configuration
+        // Firebase Configuration
         const firebaseConfig = {
           apiKey: "AIzaSyCY2KvEMW4hvXN6ai2kS3Wmcv-F3BMUGZQ",
           authDomain: "design-studio-forecasting.firebaseapp.com",
@@ -74,99 +71,6 @@
             </svg>
         );
 
-        const ChevronLeft = () => (
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-            </svg>
-        );
-
-        const ChevronRight = () => (
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-            </svg>
-        );
-
-        // Week Selector Component
-        const WeekSelector = ({ currentWeek, onWeekSelect }) => {
-          const [showCalendar, setShowCalendar] = useState(false);
-          const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
-
-          const getWeekStartDate = (weekIndex) => {
-            const startOfYear = new Date(selectedYear, 0, 1);
-            let firstMonday = new Date(startOfYear);
-            while (firstMonday.getDay() !== 1) {
-              firstMonday.setDate(firstMonday.getDate() + 1);
-            }
-            const weekStart = new Date(firstMonday);
-            weekStart.setDate(firstMonday.getDate() + (weekIndex * 7));
-            return weekStart;
-          };
-
-          const formatWeekRange = (weekIndex) => {
-            const start = getWeekStartDate(weekIndex);
-            const end = new Date(start);
-            end.setDate(start.getDate() + 4); // Friday
-            return `${start.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} - ${end.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`;
-          };
-
-          const currentWeekRange = formatWeekRange(currentWeek);
-
-          return (
-            <div className="relative">
-              <button
-                onClick={() => setShowCalendar(!showCalendar)}
-                className="flex items-center space-x-2 px-4 py-2 bg-white border border-gray-300 rounded-lg hover:bg-gray-50"
-              >
-                <Calendar />
-                <div className="text-left">
-                  <div className="font-semibold">Week {currentWeek + 1}, {selectedYear}</div>
-                  <div className="text-sm text-gray-600">{currentWeekRange}</div>
-                </div>
-              </button>
-
-              {showCalendar && (
-                <div className="absolute top-full left-0 mt-2 bg-white border border-gray-300 rounded-lg shadow-lg z-20 w-80">
-                  <div className="p-4 border-b flex items-center justify-between">
-                    <button
-                      onClick={() => setSelectedYear(selectedYear - 1)}
-                      className="p-1 hover:bg-gray-100 rounded"
-                    >
-                      <ChevronLeft />
-                    </button>
-                    <h3 className="font-semibold">{selectedYear}</h3>
-                    <button
-                      onClick={() => setSelectedYear(selectedYear + 1)}
-                      className="p-1 hover:bg-gray-100 rounded"
-                    >
-                      <ChevronRight />
-                    </button>
-                  </div>
-                  
-                  <div className="max-h-64 overflow-y-auto p-2">
-                    <div className="grid grid-cols-4 gap-1">
-                      {Array.from({ length: 52 }, (_, i) => (
-                        <button
-                          key={i}
-                          onClick={() => {
-                            onWeekSelect(i);
-                            setShowCalendar(false);
-                          }}
-                          className={`p-2 text-xs rounded hover:bg-blue-50 ${
-                            i === currentWeek ? 'bg-blue-600 text-white' : 'text-gray-700'
-                          }`}
-                        >
-                          <div className="font-medium">W{i + 1}</div>
-                          <div className="text-xs">{formatWeekRange(i)}</div>
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              )}
-            </div>
-          );
-        };
-
         const DesignStudioForecastingApp = () => {
           // Initialize state
           const [designers, setDesigners] = useState([
@@ -187,6 +91,7 @@
           const [newDesignerName, setNewDesignerName] = useState('');
           const [newProjectName, setNewProjectName] = useState('');
           const [isLoading, setIsLoading] = useState(true);
+          const [showWeekPicker, setShowWeekPicker] = useState(false);
 
           const DAILY_CAPACITY = 7;
           const DAYS_PER_WEEK = 5;
@@ -241,21 +146,12 @@
           const getWeekDates = (weekIndex) => {
             const dates = [];
             const today = new Date();
-            const startOfYear = new Date(today.getFullYear(), 0, 1);
-            
-            // Find first Monday of the year
-            let firstMonday = new Date(startOfYear);
-            while (firstMonday.getDay() !== 1) {
-              firstMonday.setDate(firstMonday.getDate() + 1);
-            }
-            
-            // Calculate the start of the target week
-            const weekStart = new Date(firstMonday);
-            weekStart.setDate(firstMonday.getDate() + (weekIndex * 7));
+            const startOfWeek = new Date(today);
+            startOfWeek.setDate(today.getDate() - today.getDay() + 1 + (weekIndex * 7)); // Monday start
             
             for (let i = 0; i < DAYS_PER_WEEK; i++) {
-              const date = new Date(weekStart);
-              date.setDate(weekStart.getDate() + i);
+              const date = new Date(startOfWeek);
+              date.setDate(startOfWeek.getDate() + i);
               dates.push(date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }));
             }
             return dates;
@@ -373,10 +269,16 @@
             }
           };
 
-          // Handle week selection
-          const handleWeekSelect = (weekIndex) => {
+          // Week picker functions
+          const selectWeek = (weekIndex) => {
             setCurrentWeek(weekIndex);
             saveToFirebase('currentWeek', weekIndex);
+            setShowWeekPicker(false);
+          };
+
+          const getWeekRange = (weekIndex) => {
+            const weekDates = getWeekDates(weekIndex);
+            return `${weekDates[0]} - ${weekDates[4]}`;
           };
 
           const weekDates = getWeekDates(currentWeek);
@@ -490,27 +392,62 @@
                         <Calendar />
                         <span className="ml-2">Week Navigation</span>
                       </h3>
-                      <div className="space-y-3">
-                        <WeekSelector 
-                          currentWeek={currentWeek}
-                          onWeekSelect={handleWeekSelect}
-                        />
+                      <div className="space-y-2">
+                        {/* Week Selector Button */}
+                        <div className="relative">
+                          <button
+                            onClick={() => setShowWeekPicker(!showWeekPicker)}
+                            className="w-full p-3 bg-blue-50 border border-blue-200 rounded-md hover:bg-blue-100 text-left"
+                          >
+                            <div className="font-semibold text-blue-900">Week {currentWeek + 1}</div>
+                            <div className="text-sm text-blue-700">{getWeekRange(currentWeek)}</div>
+                          </button>
+                          
+                          {/* Week Picker Dropdown */}
+                          {showWeekPicker && (
+                            <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-300 rounded-md shadow-lg z-10 max-h-64 overflow-y-auto">
+                              {Array.from({ length: numWeeks }, (_, i) => (
+                                <button
+                                  key={i}
+                                  onClick={() => selectWeek(i)}
+                                  className={`w-full p-2 text-left hover:bg-blue-50 ${
+                                    i === currentWeek ? 'bg-blue-100 text-blue-900' : 'text-gray-700'
+                                  }`}
+                                >
+                                  <div className="font-medium">Week {i + 1}</div>
+                                  <div className="text-sm text-gray-600">{getWeekRange(i)}</div>
+                                </button>
+                              ))}
+                            </div>
+                          )}
+                        </div>
                         
                         <div className="flex gap-2">
                           <button
-                            onClick={() => handleWeekSelect(Math.max(0, currentWeek - 1))}
+                            onClick={() => {
+                              const newWeek = Math.max(0, currentWeek - 1);
+                              setCurrentWeek(newWeek);
+                              saveToFirebase('currentWeek', newWeek);
+                            }}
                             className="px-3 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 text-sm"
                             disabled={currentWeek === 0}
                           >
                             ← Prev
                           </button>
                           <button
-                            onClick={() => handleWeekSelect(Math.min(numWeeks - 1, currentWeek + 1))}
+                            onClick={() => {
+                              const newWeek = Math.min(numWeeks - 1, currentWeek + 1);
+                              setCurrentWeek(newWeek);
+                              saveToFirebase('currentWeek', newWeek);
+                            }}
                             className="px-3 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 text-sm"
                             disabled={currentWeek === numWeeks - 1}
                           >
                             Next →
                           </button>
+                        </div>
+                        <div className="text-sm text-gray-600">
+                          Week {currentWeek + 1} of {numWeeks}
                         </div>
                       </div>
                     </div>
@@ -653,7 +590,20 @@
                     })}
                   </div>
                 </div>
+
+                {/* Click outside to close week picker */}
+                {showWeekPicker && (
+                  <div 
+                    className="fixed inset-0 z-5"
+                    onClick={() => setShowWeekPicker(false)}
+                  ></div>
+                )}
               </div>
             </div>
           );
         };
+
+        ReactDOM.render(<DesignStudioForecastingApp />, document.getElementById('root'));
+    </script>
+</body>
+</html>
