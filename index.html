@@ -8,12 +8,31 @@
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Firebase Scripts -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
 </head>
 <body>
     <div id="root"></div>
 
     <script type="text/babel">
-        const { useState } = React;
+        // Firebase Configuration
+        const firebaseConfig = {
+          apiKey: "AIzaSyCY2KvEMW4hvXN6ai2kS3Wmcv-F3BMUGZQ",
+          authDomain: "design-studio-forecasting.firebaseapp.com",
+          databaseURL: "https://design-studio-forecasting-default-rtdb.europe-west1.firebasedatabase.app",
+          projectId: "design-studio-forecasting",
+          storageBucket: "design-studio-forecasting.firebasestorage.app",
+          messagingSenderId: "1024840702386",
+          appId: "1:1024840702386:web:71cd7b8e5df551cc8d2cab"
+        };
+
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const database = firebase.database();
+
+        const { useState, useEffect } = React;
 
         // Simple icon components
         const Plus = () => (
@@ -71,9 +90,56 @@
           const [allocations, setAllocations] = useState({});
           const [newDesignerName, setNewDesignerName] = useState('');
           const [newProjectName, setNewProjectName] = useState('');
+          const [isLoading, setIsLoading] = useState(true);
 
           const DAILY_CAPACITY = 7;
           const DAYS_PER_WEEK = 5;
+
+          // Load data from Firebase on startup
+          useEffect(() => {
+            const loadData = async () => {
+              try {
+                // Load designers
+                const designersSnapshot = await database.ref('designers').once('value');
+                if (designersSnapshot.exists()) {
+                  setDesigners(designersSnapshot.val());
+                }
+
+                // Load projects
+                const projectsSnapshot = await database.ref('projects').once('value');
+                if (projectsSnapshot.exists()) {
+                  setProjects(projectsSnapshot.val());
+                }
+
+                // Load allocations
+                const allocationsSnapshot = await database.ref('allocations').once('value');
+                if (allocationsSnapshot.exists()) {
+                  setAllocations(allocationsSnapshot.val());
+                }
+
+                // Load current week
+                const weekSnapshot = await database.ref('currentWeek').once('value');
+                if (weekSnapshot.exists()) {
+                  setCurrentWeek(weekSnapshot.val());
+                }
+              } catch (error) {
+                console.error('Error loading data:', error);
+              } finally {
+                setIsLoading(false);
+              }
+            };
+
+            loadData();
+          }, []);
+
+          // Save data to Firebase
+          const saveToFirebase = async (path, data) => {
+            try {
+              await database.ref(path).set(data);
+            } catch (error) {
+              console.error('Error saving to Firebase:', error);
+            }
+          };
 
           // Generate date labels for the current week
           const getWeekDates = (weekIndex) => {
@@ -105,10 +171,12 @@
           const updateAllocation = (designerId, projectId, weekIndex, dayIndex, hours) => {
             const key = getAllocationKey(designerId, projectId, weekIndex, dayIndex);
             const numHours = Math.max(0, Math.min(DAILY_CAPACITY, parseFloat(hours) || 0));
-            setAllocations(prev => ({
-              ...prev,
+            const newAllocations = {
+              ...allocations,
               [key]: numHours
-            }));
+            };
+            setAllocations(newAllocations);
+            saveToFirebase('allocations', newAllocations);
           };
 
           // Calculate total hours for a designer on a specific day
@@ -142,7 +210,9 @@
           const addDesigner = () => {
             if (newDesignerName.trim()) {
               const newId = Math.max(...designers.map(d => d.id), 0) + 1;
-              setDesigners([...designers, { id: newId, name: newDesignerName.trim() }]);
+              const newDesigners = [...designers, { id: newId, name: newDesignerName.trim() }];
+              setDesigners(newDesigners);
+              saveToFirebase('designers', newDesigners);
               setNewDesignerName('');
             }
           };
@@ -150,7 +220,10 @@
           // Remove designer
           const removeDesigner = (id) => {
             if (designers.length > 1) {
-              setDesigners(designers.filter(d => d.id !== id));
+              const newDesigners = designers.filter(d => d.id !== id);
+              setDesigners(newDesigners);
+              saveToFirebase('designers', newDesigners);
+              
               // Clean up allocations for removed designer
               const newAllocations = { ...allocations };
               Object.keys(newAllocations).forEach(key => {
@@ -159,6 +232,7 @@
                 }
               });
               setAllocations(newAllocations);
+              saveToFirebase('allocations', newAllocations);
             }
           };
 
@@ -168,7 +242,9 @@
               const colors = ['#10B981', '#8B5CF6', '#F59E0B', '#06B6D4', '#84CC16', '#EC4899'];
               const newId = Math.max(...projects.map(p => p.id), 0) + 1;
               const color = colors[projects.length % colors.length];
-              setProjects([...projects, { id: newId, name: newProjectName.trim(), color }]);
+              const newProjects = [...projects, { id: newId, name: newProjectName.trim(), color }];
+              setProjects(newProjects);
+              saveToFirebase('projects', newProjects);
               setNewProjectName('');
             }
           };
@@ -176,7 +252,10 @@
           // Remove project
           const removeProject = (id) => {
             if (projects.length > 1) {
-              setProjects(projects.filter(p => p.id !== id));
+              const newProjects = projects.filter(p => p.id !== id);
+              setProjects(newProjects);
+              saveToFirebase('projects', newProjects);
+              
               // Clean up allocations for removed project
               const newAllocations = { ...allocations };
               Object.keys(newAllocations).forEach(key => {
@@ -185,10 +264,23 @@
                 }
               });
               setAllocations(newAllocations);
+              saveToFirebase('allocations', newAllocations);
             }
           };
 
           const weekDates = getWeekDates(currentWeek);
+
+          // Show loading state while data loads
+          if (isLoading) {
+            return (
+              <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+                <div className="text-center">
+                  <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+                  <p className="text-gray-600">Loading your forecast data...</p>
+                </div>
+              </div>
+            );
+          }
 
           return (
             <div className="min-h-screen bg-gray-50 p-6">
@@ -290,14 +382,22 @@
                       <div className="space-y-2">
                         <div className="flex gap-2">
                           <button
-                            onClick={() => setCurrentWeek(Math.max(0, currentWeek - 1))}
+                            onClick={() => {
+                              const newWeek = Math.max(0, currentWeek - 1);
+                              setCurrentWeek(newWeek);
+                              saveToFirebase('currentWeek', newWeek);
+                            }}
                             className="px-3 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 text-sm"
                             disabled={currentWeek === 0}
                           >
                             ← Prev
                           </button>
                           <button
-                            onClick={() => setCurrentWeek(Math.min(numWeeks - 1, currentWeek + 1))}
+                            onClick={() => {
+                              const newWeek = Math.min(numWeeks - 1, currentWeek + 1);
+                              setCurrentWeek(newWeek);
+                              saveToFirebase('currentWeek', newWeek);
+                            }}
                             className="px-3 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 text-sm"
                             disabled={currentWeek === numWeeks - 1}
                           >
